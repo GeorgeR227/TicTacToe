@@ -26,16 +26,24 @@ int main(){
         printBoard(board);
         cout << endl;
 
-        cout << "Enter your coordinates" << endl;
-        cin >> x >> y;
-        cout << endl;
-
-        while(!isValidSquare(x, y, empSym, board)){
-            cout << "Invalid input." << endl;
+        if(isPlayer1Turn){
             cout << "Enter your coordinates" << endl;
             cin >> x >> y;
             cout << endl;
+
+            while(!isValidSquare(x, y, empSym, board)){
+                cout << "Invalid input." << endl;
+                cout << "Enter your coordinates" << endl;
+                cin >> x >> y;
+                cout << endl;
+            }
         }
+        else{
+            tuple<int, int, int> temp = minimax(true, 0, "O", empSym, board);
+            x = get<1>(temp);
+            y = get<2>(temp);
+        }
+
 
         board[x][y] = currSym;
         if(hasWon(currSym, board)){
@@ -73,6 +81,72 @@ int main(){
     }
 };
 
+tuple <int, int, int> minimax(bool isMaxing, int depth, string symbol, string emptySym, vector<vector<string>> &board){
+
+    tuple <int, int, int> bestSquare;
+    if(isMaxing){
+        int maxScore = INT_MIN;
+        for (int i = 0; i < 3; i++){
+            for (int j = 0; j < 3; j++){
+                if(board[i][j] == emptySym){
+                    board[i][j] = symbol;
+                    if(hasWon(symbol, board)){
+                        board[i][j] = emptySym;
+                        return tuple <int, int, int> (10 - depth, i, j);
+                    }
+
+                    if(boardIsFull(emptySym, board)){
+                        board[i][j] = emptySym;
+                        return tuple <int, int, int> (0, i, j);
+                    }
+
+                    tuple<int, int, int> temp = minimax(!isMaxing, depth + 1, "X", emptySym, board);
+                    board[i][j] = emptySym;
+
+                    if(get<0>(temp) > maxScore){
+                        get<1>(bestSquare) = i;
+                        get<2>(bestSquare) = j;
+                        maxScore = get<0>(temp);
+                    }
+                }
+            }
+        }
+        get<0>(bestSquare) = maxScore;
+    }
+
+    else{
+        int minScore = INT_MAX;
+        for (int i = 0; i < 3; i++){
+            for (int j = 0; j < 3; j++){
+                if(board[i][j] == emptySym){
+                    board[i][j] = symbol;
+                    if(hasWon(symbol, board)){
+                        board[i][j] = emptySym;
+                        return tuple <int, int, int> (-10 + depth, i, j);
+                    }
+
+                    if(boardIsFull(emptySym, board)){
+                        board[i][j] = emptySym;
+                        return tuple <int, int, int> (0, i, j);
+                    }
+
+                    tuple<int, int, int> temp = minimax(!isMaxing, depth + 1, "O", emptySym, board);
+                    board[i][j] = emptySym;
+
+                    if(get<0>(temp) < minScore){
+                        get<1>(bestSquare) = i;
+                        get<2>(bestSquare) = j;
+                        minScore = get<0>(temp);
+                    }
+                }
+            }
+        }
+        get<0>(bestSquare) = minScore;
+        
+    }
+    return bestSquare;
+
+}
 
 bool hasWon(string sym, vector<vector<string>> &board){
     for(int i = 0; i < 3; i++){
