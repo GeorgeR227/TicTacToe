@@ -1,83 +1,94 @@
 #include "TTT.h"
 
 int main(){
+    bool playAgain = true;
 
-    vector<vector<string>> board;
-    board.resize(3);
+    while(playAgain){
+        vector<vector<string>> board;
+        board.resize(3);
 
-    string empSym = "e";
-    for (int i = 0; i < 3; i++){
-        board[i].resize(3);
-        for (int j = 0; j < 3; j++){
-            board[i][j] = empSym;
+        string empSym = "e";
+        for (int i = 0; i < 3; i++){
+            board[i].resize(3);
+            for (int j = 0; j < 3; j++){
+                board[i][j] = empSym;
+            }
         }
-    }
 
-    string player1Sym = "X";
-    string player2Sym = "O";
-    bool isPlayer1Turn = true; 
-    bool winning = false;
+        string player1Sym = "X";
+        string player2Sym = "O";
+        bool isPlayer1Turn = true; 
+        bool winning = false;
 
-    string currSym = player1Sym;
-    int x, y;
+        string currSym = player1Sym;
+        int x, y;
 
-    //board[row][col]
-    while(true){
-        printBoard(board);
-        cout << endl;
-
-        if(isPlayer1Turn){
-            cout << "Enter your coordinates" << endl;
-            cin >> x >> y;
+        //board[row][col]
+        while(true){
+            printBoard(board);
             cout << endl;
 
-            while(!isValidSquare(x, y, empSym, board)){
-                cout << "Invalid input." << endl;
+            if(isPlayer1Turn){
                 cout << "Enter your coordinates" << endl;
                 cin >> x >> y;
                 cout << endl;
+
+                while(!isValidSquare(x, y, empSym, board)){
+                    cout << "Invalid input." << endl;
+                    cout << "Enter your coordinates" << endl;
+                    cin >> x >> y;
+                    cout << endl;
+                }
+            }
+            else{
+                tuple<int, int, int> temp = minimax(true, 0, "O", empSym, board);
+                x = get<1>(temp);
+                y = get<2>(temp);
+            }
+
+
+            board[x][y] = currSym;
+            if(hasWon(currSym, board)){
+                winning = true;
+                break;
+            }
+
+            if(boardIsFull(empSym, board)){
+                break;
+            }
+
+            isPlayer1Turn = !isPlayer1Turn;   
+            if(isPlayer1Turn){
+                currSym = player1Sym;
+            }
+            else{
+                currSym = player2Sym;
+            }
+        }
+
+        printBoard(board);
+        cout << endl;
+
+        if(winning){
+            if(isPlayer1Turn){
+                cout << ("Player 1 has won!") << endl;
+            }
+
+            else{
+                cout << ("Player 2 has won!") << endl;
             }
         }
         else{
-            tuple<int, int, int> temp = minimax(true, 0, "O", empSym, board);
-            x = get<1>(temp);
-            y = get<2>(temp);
+            cout << ("You've tied!") << endl;
         }
 
+        string yesNo;
+        cout << "Would you like to play again? y/n" << endl;
+        cin >> yesNo;
 
-        board[x][y] = currSym;
-        if(hasWon(currSym, board)){
-            winning = true;
-            break;
+        if(yesNo == "n"){
+            playAgain = false;
         }
-
-        if(boardIsFull(empSym, board)){
-            break;
-        }
-
-        isPlayer1Turn = !isPlayer1Turn;   
-        if(isPlayer1Turn){
-            currSym = player1Sym;
-        }
-        else{
-            currSym = player2Sym;
-        }
-    }
-
-    printBoard(board);
-    cout << endl;
-
-    if(winning){
-        if(isPlayer1Turn){
-            cout << ("Player 1 has won!") << endl;
-        }
-
-        else{
-            cout << ("Player 2 has won!") << endl;
-        }
-    }
-    else{
-        cout << ("You've tied!") << endl;
     }
 };
 
